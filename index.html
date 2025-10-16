@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HP67 – Strom & Trim Ultra (v4.3)</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0f1115">
+<style>
+:root{
+  --bg:#0f1115; --card:#151923; --ink:#e9eef7; --muted:#a3adbd;
+  --accent:#7c5cff; --accent2:#23d18b; --ok:#2ecc71; --warn:#ffb020; --danger:#ff4757;
+  --border:#232738; --chip:#1e2431; --input:#121620;
+  --radius:16px; --pad:1.1rem; --font:18px;
+}
+:root[data-theme="light"]{
+  --bg:#f6f8ff; --card:#ffffff; --ink:#0b1020; --muted:#55607a;
+  --accent:#2f6aff; --accent2:#ffb020; --ok:#1db954; --warn:#ffb020; --danger:#ff3b30;
+  --border:#e5e9f5; --chip:#f0f3ff; --input:#ffffff;
+}
+:root[data-theme="neon"]{
+  --bg:#07090f; --card:#0b0f19; --ink:#e6f1ff; --muted:#9fb0c7;
+  --accent:#ff2d55; --accent2:#00fff0; --ok:#00ff9c; --warn:#ffd166; --danger:#ff5c7a;
+  --border:#182038; --chip:#0d1222; --input:#0a0f1a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:var(--font)}
+header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 70%,#0000);backdrop-filter:blur(10px);z-index:1000;border-bottom:1px solid var(--border);pointer-events:auto}
+.bar{display:flex;gap:.75rem;align-items:center;justify-content:space-between;padding:1rem;max-width:1280px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:.8rem;font-weight:800}
+.brand .logo{width:36px;height:36px;border-radius:10px;background:conic-gradient(from 210deg,var(--accent),var(--accent2));display:grid;place-items:center}
+.brand .logo span{font-size:1rem;font-weight:900;color:#0c0f14}
+.tabs{display:flex;gap:.5rem;flex-wrap:wrap}
+.tab{padding:.6rem .9rem;border-radius:12px;border:1px solid var(--border);background:var(--chip);cursor:pointer;user-select:none}
+.tab[aria-selected="true"]{background:var(--accent);color:#fff;border-color:transparent}
+main{max-width:1280px;margin:0 auto;padding:1rem;position:relative;z-index:1}
+.grid{display:grid;gap:1rem}
+@media(min-width:980px){ .cols-2{grid-template-columns:1fr 1fr} .cols-3{grid-template-columns:1.15fr 1fr 1fr} }
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:var(--pad)}
+h2{margin:.2rem 0 1rem 0;font-size:1.35rem}
+h3{margin:.2rem 0 .8rem 0}
+label{font-size:1rem;color:var(--muted);display:block;margin-bottom:.35rem}
+input[type="text"],input[type="number"],select,textarea{
+  width:100%;background:var(--input);border:1px solid var(--border);border-radius:12px;padding:.8rem .9rem;color:var(--ink);outline:none;font-size:1rem;
+  -webkit-user-select:auto; user-select:auto; touch-action:manipulation;
+}
+input[type="checkbox"]{transform:scale(1.1)}
+textarea{min-height:96px;resize:vertical}
+.row{display:flex;gap:.6rem;flex-wrap:wrap;align-items:center}
+.right{display:flex;gap:.6rem;align-items:center;justify-content:flex-end}
+.btn{appearance:none;border:none;background:var(--chip);color:var(--ink);padding:.8rem 1.1rem;border-radius:12px;font-weight:800;cursor:pointer; touch-action:manipulation;}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.ghost{background:transparent;border:1px solid var(--border)}
+.btn.ok{background:var(--ok);color:#0b0e14}
+.btn.warn{background:var(--warn);color:#0b0e14}
+.table{width:100%;border-collapse:collapse;font-size:1rem}
+.table th,.table td{padding:.7rem;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+.table th{color:var(--muted);font-weight:800}
+.table td input, .table td select{width:100%}
+.small{font-size:.95rem;color:var(--muted)}
+.notice{background:color-mix(in oklab, var(--accent) 10%, transparent);border:1px dashed var(--border);border-radius:12px;padding:.9rem}
+.badge{display:inline-block;padding:.2rem .5rem;border-radius:999px;border:1px solid var(--border);background:var(--chip);font-size:.85rem}
+.sep{height:1px;background:var(--border);margin:1rem 0}
+.hidden{display:none !important}
+footer{color:var(--muted);text-align:center;padding:1rem 0}
+.kv{display:flex;gap:.4rem;flex-wrap:wrap}
+.kv .chip{padding:.2rem .6rem;border:1px solid var(--border);border-radius:999px;background:var(--chip);font-size:.85rem}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <div class="logo"><span>HP</span></div>
+      <div>Strom & Trim Ultra</div>
+    </div>
+    <div class="tabs" role="tablist" id="topTabs">
+      <button type="button" class="tab" role="tab" aria-controls="calc" aria-selected="true" data-target="calc">Kalkulation</button>
+      <button type="button" class="tab" role="tab" aria-controls="devices" data-target="devices">Geräte</button>
+      <button type="button" class="tab" role="tab" aria-controls="materials" data-target="materials">Materialien</button>
+      <button type="button" class="tab" role="tab" aria-controls="connections" data-target="connections">Verbindungen</button>
+      <button type="button" class="tab" role="tab" aria-controls="providers" data-target="providers">Anbieter</button>
+      <button type="button" class="tab" role="tab" aria-controls="presets" data-target="presets">Vorlagen</button>
+      <button type="button" class="tab" role="tab" aria-controls="history" data-target="history">Historie</button>
+      <button type="button" class="tab" role="tab" aria-controls="settings" data-target="settings">Einstellungen</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section id="calc" class="card">
+    <h2>Auftrag kalkulieren</h2>
+    <div class="row" style="justify-content:space-between;margin-bottom:.5rem">
+      <div class="row">
+        <button class="btn ghost" id="layout_clear">Leeres Layout</button>
+        <button class="btn" id="layout_save">Layout speichern</button>
+        <select id="layout_load_select" style="min-width:220px"></select>
+        <button class="btn" id="layout_load_btn">Layout laden</button>
+      </div>
+      <div class="row small">Layouts = deine gespeicherten Presets (Geräte-/Materialzeilen + Optionen)</div>
+    </div>
+
+    <div class="grid cols-3">
+      <div class="card">
+        <h3>Geräte-Positionen</h3>
+        <div class="row">
+          <select id="dev_select" style="flex:1"></select>
+          <button class="btn" id="add_dev_row">Hinzufügen</button>
+        </div>
+        <table class="table" id="calc_dev_tbl">
+          <thead>
+            <tr>
+              <th>Gerät</th><th>Min</th><th>Duty&nbsp;%</th><th>Vorheiz&nbsp;min</th><th>Stand-by&nbsp;W</th><th>kWh</th><th>€</th><th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+        <div class="small">Duty % = aktiver Anteil (z. B. 50 %).</div>
+      </div>
+
+      <div class="card">
+        <h3>Nebenlasten & Material</h3>
+        <div class="row">
+          <div style="flex:1">
+            <label>Verbindungs-Profil</label>
+            <select id="conn_select"></select>
+          </div>
+          <div style="flex:1">
+            <label>Nebenlast-Minuten</label>
+            <input type="number" id="bg_minutes" min="0" step="1" placeholder="leer = Summe Gerätezeiten">
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="row">
+          <select id="mat_select" style="flex:1"></select>
+          <button class="btn" id="add_mat_row">Material hinzufügen</button>
+        </div>
+        <table class="table" id="calc_mat_tbl">
+          <thead><tr><th>Material</th><th>Menge</th><th>€/Einheit</th><th>€</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="row">
+          <div style="flex:1">
+            <label>Zusatzkosten (€, manuell)</label>
+            <input type="number" id="extra_cost" min="0" step="0.01" value="0">
+          </div>
+          <div style="flex:1">
+            <label>Stückzahl / Aufträge</label>
+            <input type="number" id="units" min="1" step="1" value="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Strom & Optionen</h3>
+        <div class="row">
+          <div style="flex:1">
+            <label>Anbieter</label>
+            <select id="provider_select"></select>
+          </div>
+          <div style="flex:1">
+            <label>Zeit (hh:mm, optional)</label>
+            <input type="text" id="time_hint" placeholder="z. B. 21:30">
+            <div class="small">Leer = aktuelle Uhrzeit.</div>
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label>Auto-Tarif</label>
+            <select id="rate_select"></select>
+          </div>
+          <div style="flex:1">
+            <label>Solarbeteiligung (%)</label>
+            <input type="number" id="solar_pct" min="0" max="100" step="1" value="0">
+          </div>
+        </div>
+        <div class="row">
+          <div style="flex:1">
+            <label>Verschnitt / Trim (%)</label>
+            <input type="number" id="trim_pct" min="0" step="1" value="0">
+          </div>
+          <div style="flex:1">
+            <label>Overhead / Fixkosten (%)</label>
+            <input type="number" id="overhead_pct" min="0" step="1" value="0">
+          </div>
+        </div>
+        <div class="row">
+          <label class="row" style="align-items:center"><input type="checkbox" id="opt_discount"> Stammkunde Rabatt</label>
+          <label class="row" style="align-items:center"><input type="checkbox" id="opt_express"> Express</label>
+          <label class="row" style="align-items:center"><input type="checkbox" id="opt_vat" checked> inkl. USt.</label>
+        </div>
+        <div class="sep"></div>
+        <h3>Ergebnis</h3>
+        <div class="notice">
+          <div>⚡ Strom (Geräte): <b id="r_energy_main">–</b></div>
+          <div>🔌 Strom (Nebenlasten): <b id="r_energy_bg">–</b></div>
+          <div>📦 Material gesamt: <b id="r_material">–</b></div>
+          <div>🧾 Modifikatoren: <b id="r_mods">–</b></div>
+          <div class="sep"></div>
+          <div>💰 <b>Summe</b>: <b id="r_total">–</b></div>
+          <div class="small">Netto/Brutto je nach Option.</div>
+        </div>
+        <div class="sep"></div>
+        <label>Freitext / Hinweise</label>
+        <textarea id="notes" placeholder="Alles, was du notieren willst …"></textarea>
+        <div class="sep"></div>
+        <div class="right">
+          <button class="btn" id="btn_preview">Vorschau</button>
+          <button class="btn ok" id="btn_add_history">Zur Historie</button>
+          <button class="btn primary" id="btn_calc">Berechnen</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="devices" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Geräteverwaltung</h2>
+      <div class="row">
+        <button class="btn" id="dev_add">Neues Gerät</button>
+        <button class="btn ghost" id="dev_backup">Backup</button>
+        <button class="btn ghost" id="dev_import">Import</button>
+      </div>
+    </div>
+    <table class="table" id="dev_tbl">
+      <thead><tr>
+        <th>Name</th><th>W (Betrieb)</th><th>W (Stand-by)</th><th>Duty%</th><th>Vorheiz</th><th>Specs</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="materials" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Materialien</h2>
+      <div class="row">
+        <button class="btn" id="mat_add">Neues Material</button>
+        <button class="btn ghost" id="mat_backup">Backup</button>
+        <button class="btn ghost" id="mat_import">Import</button>
+      </div>
+    </div>
+    <table class="table" id="mat_tbl">
+      <thead><tr>
+        <th>Name</th><th>Typ</th><th>Einheit</th><th>Preis/Einheit</th><th>Notiz</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="connections" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Verbindungs-Profile (Nebenlasten)</h2>
+      <div class="row">
+        <button class="btn" id="conn_add">Neues Profil</button>
+        <button class="btn ghost" id="conn_backup">Backup</button>
+        <button class="btn ghost" id="conn_import">Import</button>
+      </div>
+    </div>
+    <table class="table" id="conn_tbl">
+      <thead><tr>
+        <th>Name</th><th>Gesamt-Stand-by (W)</th><th>Details</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="providers" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Stromanbieter & Tarife</h2>
+      <div class="row">
+        <button class="btn" id="prov_add">Neuer Anbieter</button>
+        <button class="btn ghost" id="prov_backup">Backup</button>
+        <button class="btn ghost" id="prov_import">Import</button>
+      </div>
+    </div>
+    <table class="table" id="prov_tbl">
+      <thead><tr>
+        <th>Name</th><th>Beschreibung</th><th>Tarife (Zeit + Tage)</th><th></th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+    <div class="small">Tage: ALLE / WD (Mo–Fr) / WE (Sa–So).</div>
+  </section>
+
+  <section id="presets" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Vorlagen</h2>
+      <div class="row">
+        <button class="btn" id="preset_save">Aktuelle Konfiguration speichern</button>
+        <button class="btn ghost" id="preset_backup">Backup</button>
+        <button class="btn ghost" id="preset_import">Import</button>
+      </div>
+    </div>
+    <table class="table" id="preset_tbl">
+      <thead><tr><th>Name</th><th>Notiz</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="history" class="card hidden" aria-hidden="true">
+    <div class="row" style="justify-content:space-between">
+      <h2>Auftrags-Historie</h2>
+      <div class="row">
+        <button class="btn ghost" id="his_export">CSV</button>
+        <button class="btn ghost" id="his_backup">Backup</button>
+        <button class="btn warn" id="his_clear">Leeren</button>
+      </div>
+    </div>
+    <table class="table" id="his_tbl">
+      <thead><tr>
+        <th>Datum</th><th>Geräte</th><th>kWh</th><th>Tarif</th><th>Material</th><th>Netto</th><th>Brutto</th><th>Notizen</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section id="settings" class="card hidden" aria-hidden="true">
+    <h2>Einstellungen</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Allgemein</h3>
+        <label>Standard USt (%)</label>
+        <input type="number" id="set_vat" min="0" step="1" value="19">
+        <label>Standard Rabatt Stammkunde (%)</label>
+        <input type="number" id="set_disc" min="0" step="1" value="15">
+        <label>Standard Express-Aufschlag (%)</label>
+        <input type="number" id="set_express" min="0" step="1" value="20">
+        <label>Theme</label>
+        <select id="set_theme"><option value="dark">Dunkel</option><option value="light">Hell</option><option value="neon">Neon</option></select>
+        <div class="sep"></div>
+        <button class="btn ok" id="set_save">Speichern</button>
+      </div>
+      <div class="card">
+        <h3>Daten</h3>
+        <div class="row">
+          <button class="btn ghost" id="all_backup">Alles sichern</button>
+          <button class="btn ghost" id="all_restore">Alles importieren</button>
+        </div>
+        <p class="small">Speicherung lokal (offline) – nichts verlässt dein Gerät.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="small">HooDPlaka67 • v4.3 • „Schnell rechnen. Smart entscheiden.“</footer>
+</main>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const KEY = 'hp67_energy_ultra_v43';
+  const state = load() || {
+    devices:[], materials:[], connections:[], providers:[], presets:[], history:[],
+    settings:{vat:19,discount:15,express:20,theme:'dark'}
+  };
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) }catch{ return null } }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(state)) }
+  function currency(n){ return Number(n||0).toLocaleString('de-DE',{style:'currency',currency:'EUR'}) }
+
+  // --- Tab Navigation (Hash Routing) ---
+  function activateTab(id){
+    if(!id) id='calc';
+    $$('.tab').forEach(b=>{
+      const is = (b.dataset.target===id);
+      b.setAttribute('aria-selected', is?'true':'false');
+    });
+    $$('main > section').forEach(sec=>{
+      const is = (sec.id===id);
+      sec.classList.toggle('hidden', !is);
+      sec.setAttribute('aria-hidden', is?'false':'true');
+    });
+    // reflect hash
+    if(location.hash.replace('#','')!==id){
+      history.replaceState(null,'','#'+id);
+    }
+    // focus for a11y
+    const sec = document.getElementById(id);
+    if(sec) sec.setAttribute('tabindex','-1'), sec.focus({preventScroll:true});
+  }
+  // delegate clicks
+  $('#topTabs').addEventListener('click', (e)=>{
+    const b = e.target.closest('button.tab');
+    if(!b) return;
+    const id = b.dataset.target;
+    activateTab(id);
+  }, {passive:true});
+  window.addEventListener('hashchange', ()=>{
+    activateTab(location.hash.replace('#','')||'calc');
+  });
+
+  // --- Helpers ---
+  function download(filename, text, mime='text/plain'){
+    const blob=new Blob([text],{type:mime}); const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download=filename; a.click(); setTimeout(()=>URL.revokeObjectURL(url),800);
+  }
+  function fileOpen(accept, cb){
+    const input=document.createElement('input'); input.type='file'; input.accept=accept;
+    input.onchange=async e=>{ const f=e.target.files[0]; if(!f) return; const t=await f.text(); cb(t); };
+    input.click();
+  }
+  const WDAY = d => d>=1 && d<=5; // Mo–Fr (getDay: 0=So)
+  function parseHM(s){ const m=/^(\\d{1,2}):(\\d{2})$/.exec((s||'').trim()); if(!m) return null; return +m[1]*60 + +m[2] }
+
+  // --- Providers & Rates ---
+  function rateFor(provider, date, hint){
+    const hm = hint ? (parseHM(hint)||0) : (date.getHours()*60+date.getMinutes());
+    const wd = WDAY(date.getDay());
+    for(const t of (provider?.tariffs||[])){
+      const day=t.days||'ALL';
+      if(day==='WD' && !wd) continue;
+      if(day==='WE' && wd) continue;
+      const a=parseHM(t.start), b=parseHM(t.end); if(a==null||b==null) continue;
+      if(a<=b){ if(hm>=a && hm<b) return t; } else { if(hm>=a || hm<b) return t; }
+    }
+    return (provider?.tariffs||[])[0]||null;
+  }
+  function renderProviders(){
+    const tb=$('#prov_tbl tbody'); tb.innerHTML='';
+    if(!state.providers.length){ tb.innerHTML='<tr><td colspan="4" class="small">Noch keine Anbieter.</td></tr>'; }
+    state.providers.forEach((p,i)=>{
+      const tar=(p.tariffs||[]).map(t=>`${t.name} ${t.start}–${t.end} ${t.days||'ALL'} (${t.price.toFixed(3)}€/kWh)`).join(' • ');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${p.name}</td><td class="small">${p.note||''}</td>
+        <td class="small">${tar||'–'}</td>
+        <td>
+          <button class="btn small" data-i="${i}" data-act="edit">Bearbeiten</button>
+          <button class="btn small ghost" data-i="${i}" data-act="dup">Duplizieren</button>
+          <button class="btn small" data-i="${i}" data-act="del">Löschen</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    const provSel=$('#provider_select'); provSel.innerHTML='';
+    state.providers.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.name; provSel.appendChild(o); });
+    updateRateSelect();
+  }
+  function providerForm(p={name:'',note:'',tariffs:[{name:'Tag',start:'06:00',end:'22:00',days:'WD',price:0.32},{name:'Nacht',start:'22:00',end:'06:00',days:'ALL',price:0.25}]}){
+    const wrap=document.createElement('div'); wrap.className='card';
+    wrap.innerHTML=`
+      <div class="grid">
+        <div><label>Name</label><input id="p_name" value="${p.name}"></div>
+        <div style="grid-column:1/-1"><label>Beschreibung</label><input id="p_note" value="${p.note||''}"></div>
+      </div>
+      <div class="sep"></div><h3>Tarife</h3><div id="p_tariff_list"></div>
+      <div class="right"><button class="btn" id="p_add_tariff">Tarif hinzufügen</button></div>`;
+    const list=wrap.querySelector('#p_tariff_list');
+    function addRow(t){
+      const row=document.createElement('div'); row.className='row'; row.style.alignItems='flex-end';
+      row.innerHTML=`
+        <div style="flex:1"><label>Name</label><input class="pt_name" value="${t.name||'Tarif'}"></div>
+        <div><label>Start</label><input class="pt_start" value="${t.start||'06:00'}"></div>
+        <div><label>Ende</label><input class="pt_end" value="${t.end||'22:00'}"></div>
+        <div><label>Tage</label><select class="pt_days">
+          <option ${t.days==='ALL'?'selected':''}>ALL</option>
+          <option ${t.days==='WD'?'selected':''}>WD</option>
+          <option ${t.days==='WE'?'selected':''}>WE</option>
+        </select></div>
+        <div><label>€/kWh</label><input class="pt_price" type="number" step="0.0001" value="${t.price||0.30}"></div>
+        <div><button class="btn ghost pt_del">Entfernen</button></div>`;
+      row.querySelector('.pt_del').onclick=()=>row.remove();
+      list.appendChild(row);
+    }
+    (p.tariffs||[]).forEach(addRow);
+    wrap.querySelector('#p_add_tariff').onclick=()=>addRow({name:'Neu',start:'00:00',end:'23:59',days:'ALL',price:0.30});
+    wrap.getValue=()=>({
+      name: wrap.querySelector('#p_name').value.trim()||'Anbieter',
+      note: wrap.querySelector('#p_note').value.trim(),
+      tariffs: Array.from(list.children).map(r=>({
+        name:r.querySelector('.pt_name').value.trim()||'Tarif',
+        start:r.querySelector('.pt_start').value.trim()||'00:00',
+        end:r.querySelector('.pt_end').value.trim()||'23:59',
+        days:r.querySelector('.pt_days').value||'ALL',
+        price:+(r.querySelector('.pt_price').value||0)
+      }))
+    });
+    return wrap;
+  }
+  function updateRateSelect(){
+    const pIdx=+($('#provider_select').value||0);
+    const p=state.providers[pIdx]; const sel=$('#rate_select'); sel.innerHTML='';
+    if(!p) return;
+    const best = rateFor(p, new Date(), $('#time_hint').value);
+    (p.tariffs||[]).forEach((r,idx)=>{
+      const o=document.createElement('option'); o.value=idx;
+      o.textContent=`${r.name} (${r.start}–${r.end} ${r.days} • ${r.price.toFixed(3)}€/kWh)`;
+      if(best && r.name===best.name && r.start===best.start && r.end===best.end && r.days===best.days) o.selected=true;
+      sel.appendChild(o);
+    });
+  }
+  $('#provider_select').addEventListener('change', updateRateSelect);
+  $('#time_hint').addEventListener('input', updateRateSelect);
+  $('#prov_add').addEventListener('click', ()=>{
+    const f=providerForm();
+    const btns=document.createElement('div'); btns.className='right';
+    const saveBtn=document.createElement('button'); saveBtn.className='btn primary'; saveBtn.textContent='Speichern';
+    saveBtn.onclick=()=>{ state.providers.unshift(f.getValue()); save(); renderProviders(); f.remove(); btns.remove(); };
+    const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+    cancel.onclick=()=>{ f.remove(); btns.remove(); };
+    btns.appendChild(cancel); btns.appendChild(saveBtn);
+    $('#providers').appendChild(f); $('#providers').appendChild(btns);
+  });
+  $('#prov_tbl').addEventListener('click', e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i;
+    if(b.dataset.act==='del'){ if(confirm('Anbieter löschen?')){ state.providers.splice(i,1); save(); renderProviders(); } }
+    if(b.dataset.act==='dup'){ const c=JSON.parse(JSON.stringify(state.providers[i])); c.name+=' (Kopie)'; state.providers.unshift(c); save(); renderProviders(); }
+    if(b.dataset.act==='edit'){
+      const f=providerForm(state.providers[i]);
+      const btns=document.createElement('div'); btns.className='right';
+      const saveBtn=document.createElement('button'); saveBtn.className='btn primary'; saveBtn.textContent='Speichern';
+      saveBtn.onclick=()=>{ state.providers[i]=f.getValue(); save(); renderProviders(); f.remove(); btns.remove(); };
+      const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+      cancel.onclick=()=>{ f.remove(); btns.remove(); };
+      btns.appendChild(cancel); btns.appendChild(saveBtn);
+      $('#providers').appendChild(f); $('#providers').appendChild(btns);
+    }
+  });
+  $('#prov_backup').addEventListener('click', ()=>download('hp67_providers.json', JSON.stringify(state.providers,null,2),'application/json'));
+  $('#prov_import').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); if(Array.isArray(js)) state.providers=js; save(); renderProviders(); }catch{ alert('Import fehlgeschlagen'); } }));
+
+  // --- Devices ---
+  function deviceForm(d={name:'',vendor:'',model:'',w_oper:250,w_idle:8,defaultDuty:100,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:10,pf:1.0,specs:[],note:''}){
+    const wrap=document.createElement('div'); wrap.className='card';
+    wrap.innerHTML=`
+      <div class="grid cols-2">
+        <div><label>Name</label><input id="d_name" value="${d.name}"></div>
+        <div><label>Modus</label><select id="d_mode"><option ${d.mode==='Dauerbetrieb'?'selected':''}>Dauerbetrieb</option><option ${d.mode==='Pro Auftrag'?'selected':''}>Pro Auftrag</option></select></div>
+        <div><label>Hersteller</label><input id="d_vendor" value="${d.vendor||''}"></div>
+        <div><label>Modell</label><input id="d_model" value="${d.model||''}"></div>
+        <div><label>Watt Betrieb</label><input id="d_woper" type="number" min="0" step="1" value="${d.w_oper}"></div>
+        <div><label>Stand-by (W)</label><input id="d_widle" type="number" min="0" step="1" value="${d.w_idle}"></div>
+        <div><label>Default Duty %</label><input id="d_duty" type="number" min="0" max="100" step="1" value="${d.defaultDuty||100}"></div>
+        <div><label>Vorheiz (Minuten)</label><input id="d_preheat" type="number" min="0" step="1" value="${d.preheatMin||0}"></div>
+        <div><label>Spannung (V)</label><input id="d_voltage" type="number" min="0" step="1" value="${d.voltage||230}"></div>
+        <div><label>Max. Ampere (A)</label><input id="d_amp" type="number" min="0" step="0.1" value="${d.ampmax||10}"></div>
+        <div><label>Leistungsfaktor</label><input id="d_pf" type="number" min="0.1" max="1" step="0.01" value="${d.pf||1}"></div>
+        <div style="grid-column:1/-1"><label>Notiz</label><input id="d_note" value="${d.note||''}"></div>
+      </div>
+      <div class="sep"></div><h3>Spezifikationen</h3>
+      <div id="spec_list"></div>
+      <div class="right"><button class="btn" id="add_spec">Spec hinzufügen</button></div>`;
+    const list=wrap.querySelector('#spec_list');
+    function addSpec(k='',v=''){
+      const row=document.createElement('div'); row.className='row'; row.style.alignItems='flex-end';
+      row.innerHTML=`
+        <div style="flex:1"><label>Schlüssel</label><input class="sp_k" value="${k}"></div>
+        <div style="flex:1"><label>Wert</label><input class="sp_v" value="${v}"></div>
+        <div><button class="btn ghost sp_del">Entfernen</button></div>`;
+      row.querySelector('.sp_del').onclick=()=>row.remove();
+      list.appendChild(row);
+    }
+    (d.specs||[]).forEach(s=>addSpec(s.k,s.v));
+    wrap.querySelector('#add_spec').onclick=()=>addSpec('','');
+    wrap.getValue=()=>({
+      name:wrap.querySelector('#d_name').value.trim()||'Gerät',
+      vendor:wrap.querySelector('#d_vendor').value.trim(),
+      model:wrap.querySelector('#d_model').value.trim(),
+      w_oper:+(wrap.querySelector('#d_woper').value||0),
+      w_idle:+(wrap.querySelector('#d_widle').value||0),
+      defaultDuty:+(wrap.querySelector('#d_duty').value||100),
+      preheatMin:+(wrap.querySelector('#d_preheat').value||0),
+      mode:wrap.querySelector('#d_mode').value,
+      voltage:+(wrap.querySelector('#d_voltage').value||230),
+      ampmax:+(wrap.querySelector('#d_amp').value||0),
+      pf:+(wrap.querySelector('#d_pf').value||1),
+      specs:Array.from(list.children).map(r=>({k:r.querySelector('.sp_k').value.trim(), v:r.querySelector('.sp_v').value.trim()})).filter(s=>s.k||s.v),
+      note:wrap.querySelector('#d_note').value.trim()
+    });
+    return wrap;
+  }
+  function briefSpecs(d){ if(!d) return ''; const bits=[`V:${d.voltage||230}`, `Amax:${d.ampmax||'-'}`, `PF:${d.pf||1}`]; return bits.map(x=>`<span class="chip">${x}</span>`).join(' ') }
+  function renderDevices(){
+    const tb=$('#dev_tbl tbody'); tb.innerHTML='';
+    if(!state.devices.length){ tb.innerHTML='<tr><td colspan="7" class="small">Noch keine Geräte.</td></tr>'; }
+    state.devices.forEach((d,i)=>{
+      const specs=(d.specs||[]).slice(0,3).map(s=>`${s.k}:${s.v}`).join(', ');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${d.name}</td><td>${d.w_oper} W</td><td>${d.w_idle} W</td>
+        <td>${d.defaultDuty||100}%</td><td>${d.preheatMin||0} min</td>
+        <td class="small">${specs||'–'}</td>
+        <td>
+          <button class="btn small" data-i="${i}" data-act="edit">Bearbeiten</button>
+          <button class="btn small ghost" data-i="${i}" data-act="dup">Duplizieren</button>
+          <button class="btn small" data-i="${i}" data-act="del">Löschen</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    const devSel=$('#dev_select'); devSel.innerHTML='';
+    state.devices.forEach((d,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${d.name} (${d.w_oper}W)`; devSel.appendChild(o); });
+  }
+  $('#dev_add').addEventListener('click', ()=>{
+    const f=deviceForm(); const btns=document.createElement('div'); btns.className='right';
+    const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+    save.onclick=()=>{ state.devices.unshift(f.getValue()); save(); renderDevices(); f.remove(); btns.remove(); };
+    const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+    cancel.onclick=()=>{ f.remove(); btns.remove(); };
+    btns.appendChild(cancel); btns.appendChild(save);
+    $('#devices').appendChild(f); $('#devices').appendChild(btns);
+  });
+  $('#dev_tbl').addEventListener('click', e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i;
+    if(b.dataset.act==='del'){ if(confirm('Gerät löschen?')){ state.devices.splice(i,1); save(); renderDevices(); } }
+    if(b.dataset.act==='dup'){ const c=JSON.parse(JSON.stringify(state.devices[i])); c.name+=' (Kopie)'; state.devices.unshift(c); save(); renderDevices(); }
+    if(b.dataset.act==='edit'){
+      const f=deviceForm(state.devices[i]); const btns=document.createElement('div'); btns.className='right';
+      const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+      save.onclick=()=>{ state.devices[i]=f.getValue(); save(); renderDevices(); f.remove(); btns.remove(); };
+      const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+      cancel.onclick=()=>{ f.remove(); btns.remove(); };
+      btns.appendChild(cancel); btns.appendChild(save);
+      $('#devices').appendChild(f); $('#devices').appendChild(btns);
+    }
+  });
+  $('#dev_backup').addEventListener('click', ()=>download('hp67_devices.json', JSON.stringify(state.devices,null,2),'application/json'));
+  $('#dev_import').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); if(Array.isArray(js)) state.devices=js; save(); renderDevices(); }catch{ alert('Import fehlgeschlagen'); } }));
+
+  // --- Materials ---
+  function materialForm(m={name:'',kind:'Sticker',unit:'Stück',price:0,note:''}){
+    const wrap=document.createElement('div'); wrap.className='card';
+    wrap.innerHTML=`
+      <div class="grid cols-2">
+        <div><label>Name</label><input id="m_name" value="${m.name}"></div>
+        <div><label>Typ</label><select id="m_kind">
+          <option ${m.kind==='Sticker'?'selected':''}>Sticker</option>
+          <option ${m.kind==='Papier'?'selected':''}>Papier</option>
+          <option ${m.kind==='Textil'?'selected':''}>Textil</option>
+          <option ${m.kind==='Sonstiges'?'selected':''}>Sonstiges</option></select></div>
+        <div><label>Einheit</label><input id="m_unit" value="${m.unit||'Stück'}"></div>
+        <div><label>Preis/Einheit (€)</label><input id="m_price" type="number" step="0.01" value="${m.price}"></div>
+        <div style="grid-column:1/-1"><label>Notiz</label><input id="m_note" value="${m.note||''}"></div>
+      </div>`;
+    wrap.getValue=()=>({
+      name:wrap.querySelector('#m_name').value.trim()||'Material',
+      kind:wrap.querySelector('#m_kind').value,
+      unit:wrap.querySelector('#m_unit').value.trim()||'Stück',
+      price:+(wrap.querySelector('#m_price').value||0),
+      note:wrap.querySelector('#m_note').value.trim()
+    });
+    return wrap;
+  }
+  function renderMaterials(){
+    const tb=$('#mat_tbl tbody'); tb.innerHTML='';
+    if(!state.materials.length){ tb.innerHTML='<tr><td colspan="6" class="small">Noch keine Materialien.</td></tr>'; }
+    state.materials.forEach((m,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${m.name}</td><td>${m.kind}</td><td>${m.unit}</td><td>${currency(m.price)}</td>
+        <td class="small">${m.note||''}</td>
+        <td>
+          <button class="btn small" data-i="${i}" data-act="edit">Bearbeiten</button>
+          <button class="btn small ghost" data-i="${i}" data-act="dup">Duplizieren</button>
+          <button class="btn small" data-i="${i}" data-act="del">Löschen</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    const ms=$('#mat_select'); ms.innerHTML='';
+    state.materials.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${m.name} (${currency(m.price)}/${m.unit})`; ms.appendChild(o); });
+  }
+  $('#mat_add').addEventListener('click', ()=>{
+    const f=materialForm(); const btns=document.createElement('div'); btns.className='right';
+    const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+    save.onclick=()=>{ state.materials.unshift(f.getValue()); save(); renderMaterials(); f.remove(); btns.remove(); };
+    const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+    cancel.onclick=()=>{ f.remove(); btns.remove(); };
+    btns.appendChild(cancel); btns.appendChild(save);
+    $('#materials').appendChild(f); $('#materials').appendChild(btns);
+  });
+  $('#mat_tbl').addEventListener('click', e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i;
+    if(b.dataset.act==='del'){ if(confirm('Material löschen?')){ state.materials.splice(i,1); save(); renderMaterials(); } }
+    if(b.dataset.act==='dup'){ const c=JSON.parse(JSON.stringify(state.materials[i])); c.name+=' (Kopie)'; state.materials.unshift(c); save(); renderMaterials(); }
+    if(b.dataset.act==='edit'){
+      const f=materialForm(state.materials[i]); const btns=document.createElement('div'); btns.className='right';
+      const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+      save.onclick=()=>{ state.materials[i]=f.getValue(); save(); renderMaterials(); f.remove(); btns.remove(); };
+      const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+      cancel.onclick=()=>{ f.remove(); btns.remove(); };
+      btns.appendChild(cancel); btns.appendChild(save);
+      $('#materials').appendChild(f); $('#materials').appendChild(btns);
+    }
+  });
+  $('#mat_backup').addEventListener('click', ()=>download('hp67_materials.json', JSON.stringify(state.materials,null,2),'application/json'));
+  $('#mat_import').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); if(Array.isArray(js)) state.materials=js; save(); renderMaterials(); }catch{ alert('Import fehlgeschlagen'); } }));
+
+  // --- Connections ---
+  function connForm(c={name:'',items:[{name:'Steckdosenleiste',w:1.2},{name:'Router',w:7}]}){ 
+    const wrap=document.createElement('div'); wrap.className='card';
+    wrap.innerHTML=`
+      <div class="grid"><div><label>Name</label><input id="c_name" value="${c.name}"></div></div>
+      <div class="sep"></div><h3>Geräte im Profil</h3><div id="c_items"></div>
+      <div class="right"><button class="btn" id="c_add">Eintrag hinzufügen</button></div>`;
+    const list=wrap.querySelector('#c_items');
+    function addRow(it){ 
+      const row=document.createElement('div'); row.className='row'; row.style.alignItems='flex-end';
+      row.innerHTML=`
+        <div style="flex:1"><label>Bezeichnung</label><input class="ci_name" value="${it.name||''}"></div>
+        <div><label>Stand-by (W)</label><input class="ci_w" type="number" step="0.1" value="${it.w||0}"></div>
+        <div><button class="btn ghost ci_del">Entfernen</button></div>`;
+      row.querySelector('.ci_del').onclick=()=>row.remove();
+      list.appendChild(row);
+    }
+    (c.items||[]).forEach(addRow);
+    wrap.querySelector('#c_add').onclick=()=>addRow({name:'',w:1});
+    wrap.getValue=()=>({
+      name:wrap.querySelector('#c_name').value.trim()||'Profil',
+      items:Array.from(list.children).map(r=>({name:r.querySelector('.ci_name').value.trim(), w:+(r.querySelector('.ci_w').value||0)})).filter(x=>x.name||x.w)
+    });
+    return wrap;
+  }
+  function renderConns(){
+    const tb=$('#conn_tbl tbody'); tb.innerHTML='';
+    if(!state.connections.length){ tb.innerHTML='<tr><td colspan="4" class="small">Noch keine Profile.</td></tr>'; }
+    state.connections.forEach((c,i)=>{
+      const sum=(c.items||[]).reduce((a,b)=>a+(+b.w||0),0);
+      const details=(c.items||[]).slice(0,4).map(x=>`${x.name} ${x.w}W`).join(' • ');
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${c.name}</td><td>${sum.toFixed(1)} W</td><td class="small">${details||'–'}</td>
+        <td>
+          <button class="btn small" data-i="${i}" data-act="edit">Bearbeiten</button>
+          <button class="btn small ghost" data-i="${i}" data-act="dup">Duplizieren</button>
+          <button class="btn small" data-i="${i}" data-act="del">Löschen</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    const sel=$('#conn_select'); sel.innerHTML='';
+    const none=document.createElement('option'); none.value='-1'; none.textContent='— kein Profil —'; sel.appendChild(none);
+    state.connections.forEach((c,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${c.name}`; sel.appendChild(o); });
+  }
+  $('#conn_add').addEventListener('click', ()=>{
+    const f=connForm(); const btns=document.createElement('div'); btns.className='right';
+    const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+    save.onclick=()=>{ state.connections.unshift(f.getValue()); save(); renderConns(); f.remove(); btns.remove(); };
+    const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+    cancel.onclick=()=>{ f.remove(); btns.remove(); };
+    btns.appendChild(cancel); btns.appendChild(save);
+    $('#connections').appendChild(f); $('#connections').appendChild(btns);
+  });
+  $('#conn_tbl').addEventListener('click', e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i;
+    if(b.dataset.act==='del'){ if(confirm('Profil löschen?')){ state.connections.splice(i,1); save(); renderConns(); } }
+    if(b.dataset.act==='dup'){ const c=JSON.parse(JSON.stringify(state.connections[i])); c.name+=' (Kopie)'; state.connections.unshift(c); save(); renderConns(); }
+    if(b.dataset.act==='edit'){
+      const f=connForm(state.connections[i]); const btns=document.createElement('div'); btns.className='right';
+      const save=document.createElement('button'); save.className='btn primary'; save.textContent='Speichern';
+      save.onclick=()=>{ state.connections[i]=f.getValue(); save(); renderConns(); f.remove(); btns.remove(); };
+      const cancel=document.createElement('button'); cancel.className='btn ghost'; cancel.textContent='Abbrechen';
+      cancel.onclick=()=>{ f.remove(); btns.remove(); };
+      btns.appendChild(cancel); btns.appendChild(save);
+      $('#connections').appendChild(f); $('#connections').appendChild(btns);
+    }
+  });
+  $('#conn_backup').addEventListener('click', ()=>download('hp67_connections.json', JSON.stringify(state.connections,null,2),'application/json'));
+  $('#conn_import').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); if(Array.isArray(js)) state.connections=js; save(); renderConns(); }catch{ alert('Import fehlgeschlagen'); } }));
+
+  // --- Presets (Layouts) ---
+  function renderPresets(){
+    const tb=$('#preset_tbl tbody'); tb.innerHTML='';
+    if(!state.presets.length){ tb.innerHTML='<tr><td colspan="3" class="small">Noch keine Vorlagen.</td></tr>'; }
+    state.presets.forEach((p,i)=>{
+      const tr=document.createElement('tr'); tr.innerHTML=`
+        <td>${p.name}</td><td class="small">${p.note||''}</td>
+        <td>
+          <button class="btn small" data-i="${i}" data-act="load">Laden</button>
+          <button class="btn small ghost" data-i="${i}" data-act="dup">Duplizieren</button>
+          <button class="btn small" data-i="${i}" data-act="del">Löschen</button>
+        </td>`;
+      tb.appendChild(tr);
+    });
+    const ls=$('#layout_load_select'); ls.innerHTML='';
+    state.presets.forEach((p,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=p.name; ls.appendChild(o); });
+  }
+  function snapshotCalc(){
+    return {
+      devRows: readDevRows(), matRows: readMatRows(),
+      providerIdx: +($('#provider_select').value||0),
+      rateIdx: +($('#rate_select').value||0),
+      timeHint: $('#time_hint').value, solarPct:+($('#solar_pct').value||0),
+      trimPct:+($('#trim_pct').value||0), overheadPct:+($('#overhead_pct').value||0),
+      units:+($('#units').value||1), extra:+($('#extra_cost').value||0),
+      connIdx:+($('#conn_select').value||-1), bgMin:$('#bg_minutes').value,
+      opts:{disc:$('#opt_discount').checked, exp:$('#opt_express').checked, vat:$('#opt_vat').checked},
+      notes: $('#notes').value
+    };
+  }
+  function applySnapshot(s){
+    clearDevRows(); clearMatRows();
+    (s.devRows||[]).forEach(addDevRowFromData);
+    (s.matRows||[]).forEach(addMatRowFromData);
+    $('#provider_select').value = s.providerIdx||0; updateRateSelect();
+    $('#rate_select').value = s.rateIdx||0;
+    $('#time_hint').value = s.timeHint||'';
+    $('#solar_pct').value = s.solarPct||0;
+    $('#trim_pct').value = s.trimPct||0;
+    $('#overhead_pct').value = s.overheadPct||0;
+    $('#units').value = s.units||1;
+    $('#extra_cost').value = s.extra||0;
+    $('#conn_select').value = (s.connIdx==null? -1 : s.connIdx);
+    $('#bg_minutes').value = s.bgMin==null? '' : s.bgMin;
+    $('#opt_discount').checked = !!(s.opts&&s.opts.disc);
+    $('#opt_express').checked = !!(s.opts&&s.opts.exp);
+    $('#opt_vat').checked = s.opts? !!s.opts.vat : true;
+    $('#notes').value = s.notes||'';
+  }
+  function saveLayoutFlow(){
+    const name=prompt('Layout-/Vorlagenname?'); if(!name) return;
+    const note=prompt('Notiz (optional)')||'';
+    state.presets.unshift({name, note, snapshot: snapshotCalc()}); save(); renderPresets(); alert('Layout gespeichert');
+  }
+  $('#preset_save').addEventListener('click', saveLayoutFlow);
+  $('#preset_backup').addEventListener('click', ()=>download('hp67_presets.json', JSON.stringify(state.presets,null,2),'application/json'));
+  $('#preset_import').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); if(Array.isArray(js)) state.presets=js; save(); renderPresets(); }catch{ alert('Import fehlgeschlagen'); } }));
+  $('#preset_tbl').addEventListener('click', e=>{
+    const b=e.target.closest('button[data-i]'); if(!b) return; const i=+b.dataset.i; const p=state.presets[i];
+    if(b.dataset.act==='del'){ if(confirm('Vorlage löschen?')){ state.presets.splice(i,1); save(); renderPresets(); } }
+    if(b.dataset.act==='dup'){ const c=JSON.parse(JSON.stringify(p)); c.name+=' (Kopie)'; state.presets.unshift(c); save(); renderPresets(); }
+    if(b.dataset.act==='load'){ applySnapshot(p.snapshot); calc(); activateTab('calc'); }
+  });
+
+  // --- Kalkulation ---
+  const devTbody = $('#calc_dev_tbl tbody');
+  function addDevRowFromData(d){
+    const row=document.createElement('tr');
+    row.innerHTML=`
+      <td><select class="r_dev"></select><div class="small kv specs"></div></td>
+      <td><input class="r_min" type="number" min="0" step="1" value="${d.min||0}"></td>
+      <td><input class="r_duty" type="number" min="0" max="100" step="1" value="${d.duty||100}"></td>
+      <td><input class="r_pre" type="number" min="0" step="1" value="${d.pre||0}"></td>
+      <td><input class="r_idle" type="number" min="0" step="1" value="${d.idleW||0}"></td>
+      <td class="r_kwh small">0.000</td>
+      <td class="r_eur small">0,00 €</td>
+      <td><button class="btn small ghost r_del">Entfernen</button></td>`;
+    devTbody.appendChild(row);
+    const sel=row.querySelector('.r_dev'); sel.innerHTML='';
+    state.devices.forEach((dv,idx)=>{ const o=document.createElement('option'); o.value=idx; o.textContent=dv.name; sel.appendChild(o); });
+    sel.value = d.devIdx ?? 0;
+    row.querySelector('.specs').innerHTML = briefSpecs(state.devices[+sel.value]);
+    const dv=state.devices[+sel.value]||{};
+    if(d.min==null) row.querySelector('.r_min').value = 0;
+    if(d.duty==null) row.querySelector('.r_duty').value = dv.defaultDuty||100;
+    if(d.pre==null) row.querySelector('.r_pre').value = dv.preheatMin||0;
+    if(d.idleW==null) row.querySelector('.r_idle').value = dv.w_idle||0;
+
+    sel.onchange=()=>{ const d=state.devices[+sel.value]; row.querySelector('.specs').innerHTML=briefSpecs(d); calc(); };
+    row.querySelector('.r_del').onclick=()=>{ row.remove(); calc(); };
+    row.addEventListener('input', ()=>calc());
+  }
+  function addDevRow(){ const idx=+($('#dev_select').value||0); addDevRowFromData({devIdx:idx}); }
+  function clearDevRows(){ devTbody.innerHTML=''; }
+  function readDevRows(){
+    return Array.from(devTbody.children).map(tr=>({
+      devIdx:+tr.querySelector('.r_dev').value,
+      min:+(tr.querySelector('.r_min').value||0),
+      duty:+(tr.querySelector('.r_duty').value||100),
+      pre:+(tr.querySelector('.r_pre').value||0),
+      idleW:+(tr.querySelector('.r_idle').value||0)
+    }));
+  }
+  $('#add_dev_row').addEventListener('click', addDevRow);
+
+  const matTbody = $('#calc_mat_tbl tbody');
+  function addMatRowFromData(m){
+    const row=document.createElement('tr');
+    row.innerHTML=`
+      <td><select class="m_sel"></select></td>
+      <td><input class="m_qty" type="number" min="0" step="1" value="${m.qty||1}"></td>
+      <td><input class="m_price" type="number" min="0" step="0.01" value="${m.price||0}"></td>
+      <td class="m_sum">0,00 €</td>
+      <td><button class="btn small ghost m_del">Entfernen</button></td>`;
+    matTbody.appendChild(row);
+    const sel=row.querySelector('.m_sel'); sel.innerHTML='';
+    state.materials.forEach((x,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${x.name} (${currency(x.price)}/${x.unit})`; sel.appendChild(o); });
+    if(m.matIdx!=null) sel.value=m.matIdx;
+    const mm=state.materials[+sel.value]; if(m.price==null) row.querySelector('.m_price').value = mm?mm.price:0;
+    row.querySelector('.m_del').onclick=()=>{ row.remove(); calc(); };
+    sel.onchange=()=>{ const mm=state.materials[+sel.value]; if(mm) row.querySelector('.m_price').value=mm.price; calc(); };
+    row.addEventListener('input', ()=>calc());
+  }
+  function addMatRow(){ addMatRowFromData({}) }
+  function clearMatRows(){ matTbody.innerHTML=''; }
+  function readMatRows(){
+    return Array.from(matTbody.children).map(tr=>{
+      const sel=+tr.querySelector('.m_sel').value, m=state.materials[sel];
+      const qty=+(tr.querySelector('.m_qty').value||0), price=+(tr.querySelector('.m_price').value||0);
+      return {matIdx:sel, name:m?m.name:'—', unit:m?m.unit:'', qty, price, sum: qty*price};
+    });
+  }
+  $('#add_mat_row').addEventListener('click', addMatRow);
+
+  function getPricePerKWh(){
+    const pIdx=+($('#provider_select').value||0);
+    const rIdx=+($('#rate_select').value||0);
+    const provider=state.providers[pIdx]; const tariff=provider?.tariffs?.[rIdx];
+    const auto = rateFor(provider, new Date(), $('#time_hint').value) || tariff;
+    const base = (auto?.price ?? 0.30);
+    const solar = +($('#solar_pct').value||0);
+    return { price: base*(1 - solar/100), providerName:provider?.name||'', rateName:auto?.name||'Tarif' };
+  }
+  function calc(){
+    const {price,providerName,rateName} = getPricePerKWh();
+    let kWh_main=0;
+    readDevRows().forEach(r=>{
+      const d=state.devices[r.devIdx]; if(!d) return;
+      const activeMin = (r.min||0)*(r.duty||100)/100;
+      const idleMin = (r.min||0) - activeMin;
+      const preMin = (r.pre||0);
+      const wh = d.w_oper*(activeMin/60) + (r.idleW||0)*(idleMin/60) + d.w_oper*(preMin/60);
+      kWh_main += wh/1000;
+    });
+    const cost_main = kWh_main * price;
+
+    let kWh_bg=0;
+    const connIdx=+($('#conn_select').value||-1);
+    const bgMin = $('#bg_minutes').value==='' ? readDevRows().reduce((a,b)=>a+(+b.min||0),0) : +( $('#bg_minutes').value||0 );
+    if(connIdx>=0){
+      const sumW = (state.connections[connIdx]?.items||[]).reduce((a,b)=>a+(+b.w||0),0);
+      kWh_bg = (sumW*(bgMin/60))/1000;
+    }
+    const cost_bg = kWh_bg * price;
+
+    const mats = readMatRows();
+    const matCost = mats.reduce((a,b)=>a+b.sum,0);
+
+    const units = +($('#units').value||1);
+    const extra = +($('#extra_cost').value||0);
+    const trim = +($('#trim_pct').value||0), oh = +($('#overhead_pct').value||0);
+    const VAT = state.settings.vat||19;
+
+    let net = (cost_main + cost_bg + matCost + extra) * units;
+    if(trim) net *= (1 + trim/100);
+    if(oh) net *= (1 + oh/100);
+    if($('#opt_discount').checked) net *= (1 - (state.settings.discount||15)/100);
+    if($('#opt_express').checked) net *= (1 + (state.settings.express||20)/100);
+    const gross = $('#opt_vat').checked ? net*(1+VAT/100) : net;
+
+    Array.from(devTbody.children).forEach(tr=>{
+      const devIdx=+tr.querySelector('.r_dev').value;
+      const d=state.devices[devIdx]; if(!d) return;
+      const min=+(tr.querySelector('.r_min').value||0);
+      const duty=+(tr.querySelector('.r_duty').value||100);
+      const pre=+(tr.querySelector('.r_pre').value||0);
+      const idle=+(tr.querySelector('.r_idle').value||0);
+      const active=min*duty/100, idleMin=min-active;
+      const wh=d.w_oper*(active/60)+idle*(idleMin/60)+d.w_oper*(pre/60);
+      tr.querySelector('.r_kwh').textContent=(wh/1000).toFixed(3);
+      tr.querySelector('.r_eur').textContent=currency((wh/1000)*price);
+    });
+    Array.from(matTbody.children).forEach(tr=>{
+      const sum = +(tr.querySelector('.m_qty').value||0) * +(tr.querySelector('.m_price').value||0);
+      tr.querySelector('.m_sum').textContent = currency(sum);
+    });
+
+    $('#r_energy_main').textContent = `${currency(cost_main)} (${kWh_main.toFixed(3)} kWh)`;
+    $('#r_energy_bg').textContent   = `${currency(cost_bg)} (${kWh_bg.toFixed(3)} kWh)`;
+    $('#r_material').textContent    = currency(matCost);
+    const mods=[];
+    if(trim) mods.push(`Trim +${trim}%`);
+    if(oh) mods.push(`Overhead +${oh}%`);
+    if($('#opt_discount').checked) mods.push(`Rabatt -${state.settings.discount||15}%`);
+    if($('#opt_express').checked) mods.push(`Express +${state.settings.express||20}%`);
+    if($('#opt_vat').checked) mods.push(`inkl. USt ${VAT}%`);
+    $('#r_mods').textContent = mods.length? mods.join(' • ') : '—';
+    $('#r_total').textContent = currency($('#opt_vat').checked? gross : net);
+
+    return {
+      providerName, rateName, price, kWh:(kWh_main+kWh_bg),
+      cost_main, cost_bg, matCost, net:+net.toFixed(2), gross:+gross.toFixed(2),
+      devices: readDevRows().map(r=>state.devices[r.devIdx]?.name||'Gerät'),
+      materials: mats.map(m=>`${m.name} x${m.qty}`),
+      notes: ($('#notes').value||'').trim()
+    };
+  }
+  $('#btn_calc').addEventListener('click', calc);
+  $('#btn_preview').addEventListener('click', ()=>{
+    const r=calc();
+    alert(
+      'Vorschau'+'\\n\\n'+
+      'Tarif: '+r.providerName+' / '+r.rateName+'\\n'+
+      'kWh gesamt: '+r.kWh.toFixed(3)+'\\n'+
+      'Strom: '+currency(r.cost_main+r.cost_bg)+'\\n'+
+      'Material: '+currency(r.matCost)+'\\n'+
+      'Netto: '+currency(r.net)+'\\n'+
+      'Brutto: '+currency(r.gross)
+    );
+  });
+  $('#btn_add_history').addEventListener('click', ()=>{
+    const r=calc(); const row={
+      ts:Date.now(), devices:r.devices, kWh:+r.kWh.toFixed(3), provider:r.providerName, rate:r.rateName,
+      mats:r.materials.join(' | '), net:r.net, gross:r.gross, notes:r.notes
+    };
+    state.history.unshift(row); save(); renderHistory();
+  });
+
+  // --- Settings & History ---
+  function renderSettings(){
+    $('#set_vat').value=state.settings.vat||19;
+    $('#set_disc').value=state.settings.discount||15;
+    $('#set_express').value=state.settings.express||20;
+    $('#set_theme').value=state.settings.theme||'dark';
+  }
+  $('#set_save').addEventListener('click', ()=>{
+    state.settings.vat=+($('#set_vat').value||19);
+    state.settings.discount=+($('#set_disc').value||15);
+    state.settings.express=+($('#set_express').value||20);
+    state.settings.theme=$('#set_theme').value||'dark';
+    save(); applyTheme(); alert('Gespeichert');
+  });
+  $('#his_export').addEventListener('click', ()=>{
+    const header=['Datum','Geräte','kWh','Anbieter','Tarif','Material','Netto','Brutto','Notizen'];
+    const rows=state.history.map(h=>[
+      new Date(h.ts).toLocaleString(), h.devices.join(' | '), h.kWh, h.provider, h.rate, h.mats, h.net, h.gross, h.notes||''
+    ]);
+    const esc=s=>{ s=(s==null)?'':String(s); return /[";\\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+    const csv=[header,...rows].map(r=>r.map(esc).join(';')).join('\\n');
+    download('hp67_history.csv', csv, 'text/csv;charset=utf-8');
+  });
+  $('#his_backup').addEventListener('click', ()=>download('hp67_history.json', JSON.stringify(state.history,null,2),'application/json'));
+  $('#his_clear').addEventListener('click', ()=>{ if(confirm('Historie wirklich leeren?')){ state.history=[]; save(); renderHistory(); } });
+
+  function renderHistory(){
+    const tb=$('#his_tbl tbody'); tb.innerHTML='';
+    if(!state.history.length){ tb.innerHTML='<tr><td colspan="8" class="small">Noch keine Einträge.</td></tr>'; return; }
+    state.history.forEach(h=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
+        <td>${new Date(h.ts).toLocaleString()}</td>
+        <td>${h.devices.join(', ')}</td>
+        <td>${h.kWh.toFixed(3)}</td>
+        <td>${h.provider} / ${h.rate}</td>
+        <td>${h.mats}</td>
+        <td>${currency(h.net)}</td>
+        <td>${currency(h.gross)}</td>
+        <td class="small">${(h.notes||'').slice(0,140)}</td>`;
+      tb.appendChild(tr);
+    });
+  }
+
+  // --- Theme & boot ---
+  function applyTheme(){ document.documentElement.setAttribute('data-theme', state.settings.theme||'dark') }
+
+  function seed(){
+    if(!state.providers.length){
+      state.providers=[
+        {name:'Stadtwerke',note:'Beispiel',tariffs:[
+          {name:'Tag',start:'06:00',end:'22:00',days:'WD',price:0.3200},
+          {name:'Nacht',start:'22:00',end:'06:00',days:'ALL',price:0.2500},
+          {name:'WE',start:'08:00',end:'22:00',days:'WE',price:0.2900}
+        ]}
+      ];
+    }
+    if(!state.devices.length){
+      state.devices=[
+        {name:'Epson EcoTank ET-8550',vendor:'Epson',model:'ET-8550',w_oper:30,w_idle:5,defaultDuty:80,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:2,pf:0.9,specs:[{k:'Format',v:'A4/A3'}]},
+        {name:'Epson EcoTank ET-8500',vendor:'Epson',model:'ET-8500',w_oper:30,w_idle:5,defaultDuty:80,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:2,pf:0.9,specs:[{k:'Format',v:'A4/A3'}]},
+        {name:'Brother ScanNCut SDX950',vendor:'Brother',model:'SDX950',w_oper:35,w_idle:5,defaultDuty:60,preheatMin:0,mode:'Pro Auftrag',voltage:230,ampmax:1,pf:0.9,specs:[{k:'Medien',v:'Vinyl/Papier'}]},
+        {name:'Heizpresse 38×38',vendor:'—',model:'—',w_oper:1400,w_idle:50,defaultDuty:50,preheatMin:5,mode:'Dauerbetrieb',voltage:230,ampmax:10,pf:0.95},
+        {name:'Mini-Bügeleisen',vendor:'—',model:'Mini Iron',w_oper:45,w_idle:0,defaultDuty:30,preheatMin:1,mode:'Pro Auftrag',voltage:230,ampmax:1,pf:0.98},
+        {name:'EasyPress 3 (Medium)',vendor:'Cricut',model:'EasyPress 3',w_oper:1200,w_idle:20,defaultDuty:40,preheatMin:3,mode:'Pro Auftrag',voltage:230,ampmax:8,pf:0.95},
+        {name:'Studio-Monitor L',vendor:'—',model:'80 W',w_oper:80,w_idle:1,defaultDuty:70,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:0.9},
+        {name:'Studio-Monitor R',vendor:'—',model:'80 W',w_oper:80,w_idle:1,defaultDuty:70,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:0.9},
+        {name:'iPhone 13 Pro (Laden)',vendor:'Apple',model:'iPhone 13 Pro',w_oper:15,w_idle:2,defaultDuty:30,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:1.0},
+        {name:'iPhone 16 Pro Max (Laden)',vendor:'Apple',model:'iPhone 16 Pro Max',w_oper:27,w_idle:2,defaultDuty:30,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:1.0},
+        {name:'iPad Pro (Laden)',vendor:'Apple',model:'iPad Pro',w_oper:20,w_idle:2,defaultDuty:40,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:1.0},
+        {name:'Externer Monitor 27″',vendor:'—',model:'27 Zoll',w_oper:30,w_idle:1,defaultDuty:70,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:0.9},
+        {name:'LED Werkstattlampe (klein)',vendor:'—',model:'LED',w_oper:6,w_idle:0,defaultDuty:100,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:0.95},
+        {name:'Werkstattlampe groß (DT)',vendor:'—',model:'LED',w_oper:18,w_idle:0,defaultDuty:100,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:1,pf:0.95},
+        {name:'Laptop-Lüfterpad',vendor:'—',model:'USB',w_oper:5,w_idle:0,defaultDuty:100,preheatMin:0,mode:'Dauerbetrieb',voltage:5,ampmax:1,pf:1.0},
+        {name:'MSI Katana 17 (GK-1423)',vendor:'MSI',model:'Katana 17',w_oper:120,w_idle:20,defaultDuty:60,preheatMin:0,mode:'Dauerbetrieb',voltage:230,ampmax:10,pf:0.95}
+      ];
+    }
+    if(!state.materials.length){
+      state.materials=[
+        {name:'A4 Sticker Glossy',kind:'Sticker',unit:'Blatt',price:0.25,note:'Fotodruck'},
+        {name:'A4 Sticker Matt',kind:'Sticker',unit:'Blatt',price:0.22,note:''},
+        {name:'Vinylfolie Premium',kind:'Sonstiges',unit:'m',price:2.80,note:'Plotter'},
+        {name:'DTV Transfer',kind:'Textil',unit:'Stück',price:1.20,note:'Textiltransfer'},
+        {name:'Backuppapier A3',kind:'Papier',unit:'Blatt',price:0.18,note:''}
+      ];
+    }
+    if(!state.connections.length){
+      state.connections=[
+        {name:'Studio Basis', items:[{name:'Steckdosenleiste',w:1.2},{name:'Router',w:7},{name:'USB-Lader',w:2},{name:'Kleinkram',w:1.5}]},
+        {name:'Fotodruck Setup', items:[{name:'LED klein',w:6},{name:'Monitor idle',w:1},{name:'ET-8550 Stand-by',w:5}]},
+        {name:'Pressen-Station', items:[{name:'Heizpresse Stand-by',w:50},{name:'EasyPress Stand-by',w:20},{name:'Werkstattlampe groß',w:18},{name:'Lüfterpad',w:5}]}
+      ];
+    }
+    if(!state.presets.length){
+      state.presets=[
+        {name:'Standard Druck klein',note:'ET-8550 + 10 Min + 5 Blatt',snapshot:{
+          devRows:[{devIdx:0,min:10,duty:80,pre:0,idleW:5}],
+          matRows:[{matIdx:0,qty:5,price:0.25}],
+          providerIdx:0, rateIdx:0, timeHint:'', solarPct:0, trimPct:0, overheadPct:0,
+          units:1, extra:0, connIdx:-1, bgMin:'', opts:{disc:false,exp:false,vat:true}, notes:''
+        }},
+        {name:'Pressen Job',note:'Heizpresse 8 Min, Musik an',snapshot:{
+          devRows:[{devIdx:3,min:8,duty:50,pre:5,idleW:50},{devIdx:6,min:8,duty:70,pre:0,idleW:1},{devIdx:7,min:8,duty:70,pre:0,idleW:1}],
+          matRows:[],
+          providerIdx:0, rateIdx:0, timeHint:'', solarPct:0, trimPct:5, overheadPct:10,
+          units:1, extra:0, connIdx:2, bgMin:'', opts:{disc:false,exp:false,vat:true}, notes:''
+        }}
+      ];
+    }
+    save();
+  }
+
+  function renderAll(){
+    applyTheme();
+    renderProviders(); renderDevices(); renderMaterials(); renderConns(); renderPresets(); renderHistory(); renderSettings();
+    // selects in calc
+    const ds=$('#dev_select'); ds.innerHTML=''; state.devices.forEach((d,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${d.name} (${d.w_oper||0}W)`; ds.appendChild(o); });
+    const ms=$('#mat_select'); ms.innerHTML=''; state.materials.forEach((m,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=`${m.name} (${currency(m.price)}/${m.unit})`; ms.appendChild(o); });
+    const cs=$('#conn_select'); cs.innerHTML=''; const none=document.createElement('option'); none.value='-1'; none.textContent='— kein Profil —'; cs.appendChild(none);
+    state.connections.forEach((c,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=c.name; cs.appendChild(o); });
+  }
+
+  function boot(){
+    seed(); renderAll(); calc();
+    // start on hash
+    activateTab(location.hash.replace('#','')||'calc');
+  }
+
+  // Global backup/restore
+  $('#all_backup').addEventListener('click', ()=>download('hp67_all.json', JSON.stringify(state,null,2),'application/json'));
+  $('#all_restore').addEventListener('click', ()=>fileOpen('.json', t=>{ try{ const js=JSON.parse(t); Object.assign(state, js); save(); boot(); alert('Import OK'); }catch{ alert('Import fehlgeschlagen'); } }));
+
+  // Live recalculation on change
+  ['provider_select','rate_select','time_hint','solar_pct','trim_pct','overhead_pct','units','extra_cost','conn_select','bg_minutes','opt_discount','opt_express','opt_vat']
+    .forEach(id=>{ const el=$('#'+id); if(el) el.addEventListener('input', ()=>calc()); });
+
+  boot();
+})();
+</script>
+</body>
+</html>
